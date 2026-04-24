@@ -420,12 +420,33 @@ export default function ParticipantesPage() {
                         <td style={{ padding: '10px 14px', color: '#6B4C3B', fontSize: 12 }}>{p.whatsapp || '-'}</td>
                         <td style={{ padding: '10px 14px', color: '#8B6F47', fontSize: 12 }}>{[p.cidade, p.estado].filter(Boolean).join('/') || '-'}</td>
                         <td style={{ padding: '10px 14px' }}>
-                          <span style={{
-                            padding: '4px 10px', borderRadius: 6, fontSize: 10, fontWeight: 700,
-                            textTransform: 'uppercase', letterSpacing: '0.05em',
-                            background: p.situacao === 'Confirmado' ? 'rgba(39,174,96,0.1)' : p.situacao === 'Pendente' ? 'rgba(230,126,34,0.1)' : 'rgba(192,57,43,0.1)',
-                            color: p.situacao === 'Confirmado' ? '#27AE60' : p.situacao === 'Pendente' ? '#E67E22' : '#C0392B',
-                          }}>{p.situacao}</span>
+                          <select
+                            value={p.situacao}
+                            onChange={async (e) => {
+                              const novaSituacao = e.target.value;
+                              await fetch(`/api/participantes/${p.id}`, {
+                                method: 'PATCH',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ situacao: novaSituacao }),
+                              });
+                              fetchAll();
+                            }}
+                            style={{
+                              padding: '6px 10px', borderRadius: 8, fontSize: 11, fontWeight: 700,
+                              textTransform: 'uppercase', letterSpacing: '0.05em',
+                              cursor: 'pointer', outline: 'none',
+                              fontFamily: "'Inter', sans-serif",
+                              border: '1.5px solid',
+                              appearance: 'auto',
+                              background: p.situacao === 'Confirmado' ? 'rgba(39,174,96,0.08)' : p.situacao === 'Pendente' ? 'rgba(230,126,34,0.08)' : 'rgba(192,57,43,0.08)',
+                              color: p.situacao === 'Confirmado' ? '#27AE60' : p.situacao === 'Pendente' ? '#E67E22' : '#C0392B',
+                              borderColor: p.situacao === 'Confirmado' ? 'rgba(39,174,96,0.25)' : p.situacao === 'Pendente' ? 'rgba(230,126,34,0.25)' : 'rgba(192,57,43,0.25)',
+                            }}
+                          >
+                            <option value="Confirmado">Confirmado</option>
+                            <option value="Pendente">Pendente</option>
+                            <option value="Cancelado">Cancelado</option>
+                          </select>
                         </td>
                         <td style={{ padding: '10px 14px' }}>
                           <button onClick={() => remove(p.id)} style={{
