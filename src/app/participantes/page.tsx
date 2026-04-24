@@ -206,43 +206,112 @@ export default function ParticipantesPage() {
             borderRadius: 20, padding: 28, background: 'rgba(255,255,255,0.85)',
             border: '1px solid rgba(200,168,126,0.18)', boxShadow: '0 8px 35px rgba(60,40,20,0.05)',
           }}>
+            {/* UPLOAD DE ARQUIVO */}
+            <div style={{ marginBottom: 28 }}>
+              <p style={{ fontSize: 16, color: '#2C1E14', fontWeight: 700, marginBottom: 4 }}>
+                Importar Planilha
+              </p>
+              <p style={{ fontSize: 12, color: '#A68B6B', marginBottom: 16 }}>
+                Envie um arquivo .xlsx, .xls ou .csv. As colunas sao detectadas automaticamente pelo nome do cabecalho.
+              </p>
+              <label
+                style={{
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                  padding: '40px 20px', borderRadius: 16,
+                  border: '2px dashed #D4C4AE', background: '#FDFAF6',
+                  cursor: 'pointer', transition: 'all 0.3s ease',
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#C8A87E'; e.currentTarget.style.background = '#FAF3EB'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#D4C4AE'; e.currentTarget.style.background = '#FDFAF6'; }}
+              >
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#C8A87E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="17 8 12 3 7 8" />
+                  <line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
+                <p style={{ fontSize: 14, fontWeight: 600, color: '#5C3D2E', marginTop: 12 }}>
+                  Clique para selecionar o arquivo
+                </p>
+                <p style={{ fontSize: 12, color: '#B8A08A', marginTop: 4 }}>
+                  .xlsx, .xls ou .csv
+                </p>
+                <input
+                  type="file"
+                  accept=".xlsx,.xls,.csv"
+                  style={{ display: 'none' }}
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    setImporting(true);
+                    setImportResult('');
+                    try {
+                      const formData = new FormData();
+                      formData.append('file', file);
+                      const res = await fetch('/api/importar', { method: 'POST', body: formData });
+                      const data = await res.json();
+                      if (res.ok) {
+                        setImportResult(`${data.imported} participantes importadas com sucesso!`);
+                        fetchAll();
+                      } else {
+                        setImportResult(data.error || 'Erro ao importar');
+                      }
+                    } catch {
+                      setImportResult('Erro ao processar arquivo');
+                    }
+                    setImporting(false);
+                    e.target.value = '';
+                  }}
+                />
+              </label>
+            </div>
+
+            {/* DIVISOR */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '24px 0' }}>
+              <div style={{ flex: 1, height: 1, background: '#E8DDD0' }} />
+              <span style={{ fontSize: 11, color: '#C8B8A4', fontWeight: 600 }}>OU</span>
+              <div style={{ flex: 1, height: 1, background: '#E8DDD0' }} />
+            </div>
+
+            {/* COLAR DADOS */}
             <p style={{ fontSize: 14, color: '#5C3D2E', fontWeight: 600, marginBottom: 4 }}>
-              Cole os dados da planilha aqui
+              Colar dados da planilha
             </p>
-            <p style={{ fontSize: 12, color: '#A68B6B', marginBottom: 16 }}>
-              Copie as linhas da sua planilha (com ou sem cabecalho) e cole no campo abaixo. Os dados devem estar separados por TAB.
+            <p style={{ fontSize: 12, color: '#A68B6B', marginBottom: 12 }}>
+              Copie as linhas da planilha e cole abaixo (separadas por TAB).
             </p>
             <textarea
               placeholder="Cole aqui os dados copiados da planilha..."
               value={importText}
               onChange={(e) => setImportText(e.target.value)}
               style={{
-                width: '100%', height: 220, padding: '16px 18px', borderRadius: 14,
+                width: '100%', height: 180, padding: '16px 18px', borderRadius: 14,
                 fontSize: 12, fontFamily: 'monospace', color: '#2C1E14',
                 background: '#FDFAF6', border: '2px solid #E8DDD0', outline: 'none',
                 resize: 'vertical', boxSizing: 'border-box',
               }}
             />
-            <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
-              <button
-                onClick={importar}
-                disabled={importing || !importText.trim()}
-                style={{
-                  flex: 1, padding: '16px 0', borderRadius: 14, fontSize: 14, fontWeight: 800,
-                  cursor: importing ? 'not-allowed' : 'pointer', letterSpacing: '0.1em',
-                  textTransform: 'uppercase', color: '#fff', border: 'none',
-                  background: 'linear-gradient(135deg, #27AE60, #1E8449)',
-                  boxShadow: '0 6px 20px rgba(39,174,96,0.18)',
-                  fontFamily: "'Inter', sans-serif", opacity: !importText.trim() ? 0.4 : 1,
-                }}
-              >
-                {importing ? 'Importando...' : 'Importar Participantes'}
-              </button>
-            </div>
+            <button
+              onClick={importar}
+              disabled={importing || !importText.trim()}
+              style={{
+                width: '100%', marginTop: 12, padding: '16px 0', borderRadius: 14, fontSize: 14, fontWeight: 800,
+                cursor: importing ? 'not-allowed' : 'pointer', letterSpacing: '0.1em',
+                textTransform: 'uppercase', color: '#fff', border: 'none',
+                background: 'linear-gradient(135deg, #27AE60, #1E8449)',
+                boxShadow: '0 6px 20px rgba(39,174,96,0.18)',
+                fontFamily: "'Inter', sans-serif", opacity: !importText.trim() ? 0.4 : 1,
+              }}
+            >
+              {importing ? 'Importando...' : 'Importar Colagem'}
+            </button>
+
+            {/* RESULTADO */}
             {importResult && (
               <p style={{
-                marginTop: 14, fontSize: 13, fontWeight: 600, textAlign: 'center',
-                color: importResult.includes('sucesso') ? '#27AE60' : '#C0392B',
+                marginTop: 16, fontSize: 14, fontWeight: 700, textAlign: 'center',
+                padding: '14px 20px', borderRadius: 12,
+                color: importResult.includes('sucesso') ? '#1E8449' : '#C0392B',
+                background: importResult.includes('sucesso') ? 'rgba(39,174,96,0.08)' : 'rgba(192,57,43,0.08)',
               }}>{importResult}</p>
             )}
           </div>
