@@ -1,7 +1,8 @@
 import Database from 'better-sqlite3';
 import path from 'path';
 
-const dbPath = path.join(process.cwd(), 'rifa.db');
+const dataDir = process.env.DATA_DIR || process.cwd();
+const dbPath = path.join(dataDir, 'rifa.db');
 const db = new Database(dbPath);
 
 db.exec(`
@@ -27,6 +28,7 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS sorteios (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     participante_id INTEGER NOT NULL,
+    presente INTEGER DEFAULT 1,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (participante_id) REFERENCES participantes(id)
   );

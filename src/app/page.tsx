@@ -188,26 +188,59 @@ export default function Home() {
             </button>
           </div>
 
-          {historico.map((s, i) => (
+          {historico.map((s: any, i) => (
             <div key={s.id} style={{
               display: 'flex', alignItems: 'center', gap: 14,
               padding: '14px 16px', borderRadius: 14, marginBottom: 8,
-              background: '#fff', border: '1px solid #EDE5DA',
+              background: s.presente ? '#fff' : 'rgba(192,57,43,0.04)',
+              border: s.presente ? '1px solid #EDE5DA' : '1px solid rgba(192,57,43,0.15)',
+              opacity: s.presente ? 1 : 0.7,
             }}>
               <span style={{
                 width: 36, height: 36, borderRadius: '50%', display: 'flex',
                 alignItems: 'center', justifyContent: 'center',
                 fontSize: 12, fontWeight: 800, color: '#fff', flexShrink: 0,
-                background: 'linear-gradient(135deg, #6B4C3B, #4A3125)',
+                background: s.presente
+                  ? 'linear-gradient(135deg, #6B4C3B, #4A3125)'
+                  : 'linear-gradient(135deg, #C0392B, #96281B)',
               }}>
                 {String(i + 1).padStart(2, '0')}
               </span>
-              <div>
-                <p style={{ fontSize: 14, fontWeight: 600, color: '#2C1E14', margin: 0 }}>{s.nome}</p>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{
+                  fontSize: 14, fontWeight: 600, margin: 0,
+                  color: s.presente ? '#2C1E14' : '#C0392B',
+                  textDecoration: s.presente ? 'none' : 'line-through',
+                }}>{s.nome}</p>
                 <p style={{ fontSize: 11, color: '#B8A08A', margin: '2px 0 0' }}>
                   {new Date(s.created_at).toLocaleString('pt-BR')}
+                  {!s.presente && <span style={{ color: '#C0392B', fontWeight: 700, marginLeft: 6 }}>NAO VEIO</span>}
                 </p>
               </div>
+              <button
+                onClick={async () => {
+                  await fetch('/api/historico', {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: s.id, presente: !s.presente }),
+                  });
+                  fetchHistorico();
+                }}
+                title={s.presente ? 'Marcar como ausente' : 'Marcar como presente'}
+                style={{
+                  padding: '6px 12px', borderRadius: 8, fontSize: 10, fontWeight: 700,
+                  cursor: 'pointer', border: 'none', flexShrink: 0,
+                  fontFamily: "'Inter', sans-serif",
+                  textTransform: 'uppercase', letterSpacing: '0.05em',
+                  background: s.presente ? 'rgba(192,57,43,0.08)' : 'rgba(39,174,96,0.08)',
+                  color: s.presente ? '#C0392B' : '#27AE60',
+                  transition: 'all 0.3s ease',
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.05)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
+              >
+                {s.presente ? 'Ausente' : 'Presente'}
+              </button>
             </div>
           ))}
 
